@@ -1184,3 +1184,45 @@ class Boost_Multi_Index:
         if self.empty_cont():
             return 'empty %s' % self.type_name
         return '%s' % self.type_name
+
+@_register_printer
+class BoostNumericUblasVector:
+    "Pretty Printer for boost::numeric::ublas::vector"
+    printer_name = "boost::numeric::ublas::vector"
+    version = "1.0"
+    type_name_re = "^boost::numeric::ublas::vector<.*>$"
+
+    def __init__(self, value):
+        self.value = value
+        self.datatype = value.type.template_argument(0)
+
+    class _iterator:
+        def __init__(self, begin, end):
+            self.item = begin
+            self.end = end
+            self.count = 0
+
+        def __iter__(self):
+            return self
+
+        def next(self):
+            if self.item == self.end:
+                raise StopIteration
+            count = self.count
+            self.count = self.count + 1
+            elem = self.item.dereference()
+            self.item = self.item + 1
+            return ('[%d]' % count, elem)
+
+    def children(self):
+        size = self.value['data_']['size_']
+        return self._iterator(self.value['data_']['data_'],
+                self.value['data_']['data_']+size)
+
+    def to_string(self):
+        size = self.value['data_']['size_']
+        data = self.value['data_']['data_']
+        return self.printer_name+"<%s> of size %d"%(self.datatype, size)
+
+    def display_hint(self):
+         return 'array'
