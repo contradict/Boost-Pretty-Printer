@@ -1226,3 +1226,36 @@ class BoostNumericUblasVector:
 
     def display_hint(self):
          return 'array'
+
+@_register_printer
+class BoostNumericUblasSymmetricMatrix:
+    "Pretty Printer for boost::numeric::ublas::symmetric_matrix"
+    printer_name = "boost::numeric::ublas::symmetric_matrix"
+    version = "1.0"
+    type_name_re = "^boost::numeric::ublas::symmetric_matrix<.*>$"
+
+    def __init__(self, value):
+        self.value = value
+        self.datatype =value.type.template_argument(0)
+
+    def to_string(self):
+        size = self.value['size_']
+        data = self.value['data_']['data_']
+        result=self.printer_name+"<%s> of size %dx%d =\n{ "%(self.datatype, size, size)
+        for row in range(size):
+            for col in range(size):
+                if col>row:
+                    result +="* "
+                else:
+                    elem = data.dereference()
+                    data += 1
+                    result += "%s"%elem
+                if col != size-1:
+                    result += ", "
+            if row != size-1:
+                result += ",\n  "
+        result += " }"
+        return result
+
+    def display_hint(self):
+         return 'array'
